@@ -4,12 +4,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# User uploaded files (will be cleaned automatically)
-uploads/
-galleries/
-music/
-qr/
-
 # Logs
 logs/
 *.log

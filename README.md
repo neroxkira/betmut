@@ -14,15 +14,14 @@ A beautiful 3D gallery web application where users can create custom photo galle
 - `package.json` - Dependencies dan scripts
 - `.gitignore` - Mengecualikan file yang tidak perlu
 
-### Auto-Cleanup System
-Project ini memiliki sistem pembersihan otomatis:
-- **File expired setelah 2 hari** dari tanggal upload
-- **Cron job berjalan setiap 12 jam** (00:00 dan 12:00)  
-- **Cleanup saat startup** server (5 detik setelah start)
+### ⚠️ File Storage di Vercel
+- File uploads disimpan di `/tmp` (temporary storage)
+- **File akan hilang saat function restart** 
+- Untuk production, sebaiknya gunakan cloud storage (AWS S3, Cloudinary, dll)
+- Saat ini cocok untuk demo/testing
 
 ### Environment Variables (Opsional)
-Di Vercel dashboard, Anda bisa menambahkan:
-- `PORT` - Port server (default: 3000)
+Di Vercel dashboard, tidak ada yang perlu ditambahkan untuk basic setup.
 
 ## Features
 
@@ -34,7 +33,6 @@ Di Vercel dashboard, Anda bisa menambahkan:
 - 🔗 Unique shareable links for each gallery
 - ❤️ Clean QR codes for easy sharing
 - 🌧️ Falling hearts animation
-- 🧹 Auto-cleanup file expired (2 hari)
 - 📂 Professional corporate design
 
 ## Installation
