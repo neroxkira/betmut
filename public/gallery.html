@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Love Gallery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #000;
+            min-height: 100vh;
+            overflow: hidden;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+
+        .stars-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 3px rgba(255, 255, 255, 0.6);
+            animation: fallStar linear infinite;
+        }
+
+        .falling-star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+            animation: fallStar linear infinite;
+        }
+
+        @keyframes fallStar {
+            0% {
+                transform: translateY(-100vh);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh);
+                opacity: 0;
+            }
+        }
+
+        @keyframes twinkle {
+            0%, 100% { 
+                opacity: 0.4; 
+                transform: scale(0.8);
+                box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+            }
+            50% { 
+                opacity: 1; 
+                transform: scale(1.6);
+                box-shadow: 0 0 16px rgba(255, 255, 255, 1);
+            }
+        }
+
+        .gallery-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            perspective: 1200px;
+            perspective-origin: center center;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .falling-items {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
+        }
+
+        .falling-text {
+            position: absolute;
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 
+                0 0 10px #ffffff,
+                0 0 20px #ffffff,
+                0 0 30px #ffffff,
+                0 0 40px #ffffff;
+            animation: fallText linear infinite;
+            white-space: nowrap;
+        }
+
+        .falling-image {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+            animation: fallImage linear infinite;
+        }
+
+        @keyframes fallText {
+            0% {
+                transform: translateY(-100vh);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh);
+                opacity: 0;
+            }
+        }
+
+        @keyframes fallImage {
+            0% {
+                transform: translateY(-100vh);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh);
+                opacity: 0;
+            }
+        }
+
+        .gallery-3d {
+            display: none; /* Hide the main gallery cards */
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #ff69b4;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .error h2 {
+            color: #ff69b4;
+            margin-bottom: 20px;
+        }
+
+        .back-home {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #ff69b4, #ff1493);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .back-home:hover {
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .falling-text {
+                font-size: 18px;
+            }
+            
+            .falling-image {
+                width: 60px;
+                height: 60px;
+            }
+
+            /* Make touch area cover full screen */
+            .gallery-container {
+                touch-action: none;
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                user-select: none;
+                width: 100vw;
+                height: 100vh;
+                overflow: hidden;
+            }
+            
+            /* Ensure full viewport usage on mobile */
+            body {
+                width: 100vw;
+                height: 100vh;
+                overflow: hidden;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .gallery-3d {
+                width: 100vw !important;
+                height: 100vh !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .falling-text {
+                font-size: 16px;
+            }
+            
+            .falling-image {
+                width: 50px;
+                height: 50px;
+            }
+        }
+
+        .gallery-3d.sliding {
+            transition: transform 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div>Loading your magical gallery...</div>
+    </div>
+
+    <!-- Audio Player untuk musik (hidden, background only) -->
+    <audio id="backgroundMusic" autoplay loop style="display: none;" volume="0.7">
+        <source id="musicSource" src="" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <div class="gallery-container" id="gallery-container" style="display: none;">
+        <div class="stars-background" id="stars-background"></div>
+        <div class="falling-items" id="falling-items"></div>
+    </div>
+
+    <div class="error" id="error" style="display: none;">
+        <h2>Gallery Not Found 💔</h2>
+        <p>The gallery you're looking for doesn't exist or has been removed.</p>
+        <a href="/" class="back-home">Create New Gallery</a>
+    </div>
+
+    <script>
+        let galleryData = null;
+        let currentRotateX = 0;
+        let currentRotateY = 0;
+        let currentZoom = 1;
+        let touchStartX = 0;
+        let touchEndX = 0;
+        let touchStartY = 0;
+        let touchEndY = 0;
+        let isDragging = false;
+        let lastUpdateTime = 0;
+        
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        
+        console.log('Device detection - iOS:', isIOS, 'User Agent:', navigator.userAgent);
+
+        const pathParts = window.location.pathname.split('/');
+        const galleryId = pathParts[pathParts.length - 1];
+
+        async function loadGallery() {
+            try {
+                const response = await fetch(`/api/gallery/${galleryId}`);
+                
+                if (!response.ok) {
+                    throw new Error('Gallery not found');
+                }
+                
+                galleryData = await response.json();
+                
+                setTimeout(() => {
+                    initializeGallery();
+                }, 100);
+                
+            } catch (error) {
+                console.error('Error loading gallery:', error);
+                showError();
+            }
+        }
+
+        function initializeGallery() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('gallery-container').style.display = 'flex';
+            
+            setupAudioPlayer();
+            
+            createStarsBackground();
+            
+            startFallingItems();
+            
+            addTouchEvents();
+            
+            addMouseEvents();
+            
+            addKeyboardControls();
+        }
+
+        function setupAudioPlayer() {
+            if (galleryData.musicPath) {
+                console.log('Setting up background music with:', galleryData.musicPath);
+                
+                const musicSource = document.getElementById('musicSource');
+                const backgroundMusic = document.getElementById('backgroundMusic');
+                
+                musicSource.src = galleryData.musicPath;
+                backgroundMusic.load(); 
+                backgroundMusic.volume = 0.7; 
+                let musicStarted = false;
+                
+                function startMusic() {
+                    if (musicStarted || !backgroundMusic.paused) return;
+                    
+                    console.log('Starting music...');
+                    backgroundMusic.play().then(() => {
+                        console.log('Music started successfully!');
+                        musicStarted = true;
+                        
+                        if (galleryData.musicType === 'default') {
+                            backgroundMusic.addEventListener('canplaythrough', () => {
+                                const duration = backgroundMusic.duration;
+                                if (duration && duration > 30) {
+                                    const randomStart = Math.random() * (duration - 30);
+                                    backgroundMusic.currentTime = randomStart;
+                                    console.log(`Default music started at ${randomStart.toFixed(1)} seconds`);
+                                }
+                            }, { once: true });
+                        }
+                    }).catch(err => {
+                        console.log('Music play failed:', err);
+                    });
+                }
+                setTimeout(startMusic, 500);
+                function handleFirstInteraction() {
+                    console.log('First user interaction detected - starting music');
+                    startMusic();
+                    document.removeEventListener('click', handleFirstInteraction);
+                    document.removeEventListener('touchstart', handleFirstInteraction);
+                }
+                
+                document.addEventListener('click', handleFirstInteraction);
+                document.addEventListener('touchstart', handleFirstInteraction);
+                backgroundMusic.addEventListener('ended', () => {
+                    if (galleryData.musicType === 'default') {
+                        const duration = backgroundMusic.duration;
+                        if (duration && duration > 30) {
+                            const randomStart = Math.random() * (duration - 30);
+                            backgroundMusic.currentTime = randomStart;
+                            console.log(`Default music loop: restarted at ${randomStart.toFixed(1)} seconds`);
+                        }
+                    }
+                    backgroundMusic.play().catch(err => console.log('Loop restart failed:', err));
+                });
+                
+                console.log('Background music setup complete');
+            } else {
+                console.log('No music path found in gallery data');
+            }
+        }
+        
+        function showIOSTapHint() {
+            const hint = document.createElement('div');
+            hint.id = 'ios-tap-hint';
+            hint.innerHTML = '🎵 Tap anywhere to start music';
+            hint.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(255, 105, 180, 0.9);
+                color: white;
+                padding: 10px 20px;
+                border-radius: 20px;
+                font-size: 14px;
+                z-index: 1000;
+                animation: fadeInOut 3s ease-in-out;
+                pointer-events: none;
+            `;
+            
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeInOut {
+                    0% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+                    20% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                    80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                    100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            document.body.appendChild(hint);
+            
+            setTimeout(() => {
+                if (hint.parentNode) {
+                    hint.parentNode.removeChild(hint);
+                }
+                if (style.parentNode) {
+                    style.parentNode.removeChild(style);
+                }
+            }, 3000);
+        }
+
+        function startFallingItems() {
+            const fallingContainer = document.getElementById('falling-items');
+            
+            setInterval(() => {
+                createFallingText(fallingContainer);
+            }, 300);
+            
+            setInterval(() => {
+                createFallingImage(fallingContainer);
+            }, 500);
+            
+            setInterval(() => {
+                createFallingStar(fallingContainer);
+            }, 800);
+        }
+
+        function createFallingText(container) {
+            const text = document.createElement('div');
+            text.className = 'falling-text';
+            text.textContent = galleryData.customText;
+            text.style.left = Math.random() * 100 + '%';
+            text.style.animationDuration = (Math.random() * 3 + 4) + 's';
+            text.style.fontSize = (Math.random() * 20 + 20) + 'px';
+            
+            container.appendChild(text);
+            
+            setTimeout(() => {
+                if (text.parentNode) {
+                    text.parentNode.removeChild(text);
+                }
+            }, 7000);
+        }
+
+        function createFallingImage(container) {
+            const randomImage = galleryData.images[Math.floor(Math.random() * galleryData.images.length)];
+            const img = document.createElement('img');
+            img.className = 'falling-image';
+            img.src = randomImage.path;
+            img.style.left = Math.random() * 100 + '%';
+            img.style.animationDuration = (Math.random() * 4 + 5) + 's';
+            img.style.width = (Math.random() * 40 + 60) + 'px';
+            img.style.height = img.style.width;
+            
+            container.appendChild(img);
+            
+            setTimeout(() => {
+                if (img.parentNode) {
+                    img.parentNode.removeChild(img);
+                }
+            }, 9000);
+        }
+
+        function createFallingStar(container) {
+            const star = document.createElement('div');
+            star.className = 'falling-star';
+            
+            const size = Math.random() * 4 + 2;
+            star.style.width = size + 'px';
+            star.style.height = size + 'px';
+            
+            star.style.left = Math.random() * 100 + '%';
+            star.style.animationDuration = (Math.random() * 6 + 4) + 's';
+            
+            container.appendChild(star);
+            
+            setTimeout(() => {
+                if (star.parentNode) {
+                    star.parentNode.removeChild(star);
+                }
+            }, 10000);
+        }
+
+        function rotateLeft() {
+            currentRotateY -= 15;
+            updatePerspective();
+        }
+
+        function rotateRight() {
+            currentRotateY += 15;
+            updatePerspective();
+        }
+
+        function rotateUp() {
+            currentRotateX -= 15;
+            updatePerspective();
+        }
+
+        function rotateDown() {
+            currentRotateX += 15;
+            updatePerspective();
+        }
+
+        function updatePerspective() {
+            const fallingItems = document.getElementById('falling-items');
+            const currentTransform = fallingItems.style.transform;
+            
+            const scaleMatch = currentTransform.match(/scale\(([^)]+)\)/);
+            const scale = scaleMatch ? scaleMatch[1] : '1';
+            
+            fallingItems.style.transform = `
+                rotateX(${currentRotateX}deg) 
+                rotateY(${currentRotateY}deg)
+                scale(${scale})
+            `;
+        }
+
+        function addKeyboardControls() {
+            document.addEventListener('keydown', (e) => {
+                switch(e.key) {
+                    case 'ArrowLeft':
+                        rotateLeft();
+                        break;
+                    case 'ArrowRight':
+                        rotateRight();
+                        break;
+                    case 'ArrowUp':
+                        rotateUp();
+                        break;
+                    case 'ArrowDown':
+                        rotateDown();
+                        break;
+                }
+            });
+        }
+
+        function addTouchEvents() {
+            const gallery = document.getElementById('gallery-container');
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let touchMoveX = 0;
+            let touchMoveY = 0;
+            let isTouch = false;
+            let lastTouchDistance = 0;
+            
+            gallery.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                
+                const backgroundMusic = document.getElementById('backgroundMusic');
+                if (backgroundMusic && backgroundMusic.paused) {
+                    console.log('Touch detected - attempting music start');
+                    
+                    backgroundMusic.play().then(() => {
+                        console.log('Touch: Music started successfully');
+                        
+                        if (galleryData.musicType === 'default') {
+                            const duration = backgroundMusic.duration;
+                            if (duration && duration > 30) {
+                                const randomStart = Math.random() * (duration - 30);
+                                backgroundMusic.currentTime = randomStart;
+                                console.log(`Touch: Default music started at ${randomStart.toFixed(1)} seconds`);
+                            }
+                        }
+                    }).catch(err => console.log('Touch play failed:', err));
+                }
+                
+                if (e.touches.length === 1) {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                    isTouch = true;
+                } else if (e.touches.length === 2) {
+                    const distance = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    lastTouchDistance = distance;
+                }
+            }, { passive: false });
+            
+            gallery.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                
+                if (e.touches.length === 1 && isTouch) {
+                    touchMoveX = e.touches[0].clientX;
+                    touchMoveY = e.touches[0].clientY;
+                    
+                    const deltaX = touchMoveX - touchStartX;
+                    const deltaY = touchMoveY - touchStartY;
+                    
+                    currentRotateY += deltaX * 0.3;
+                    currentRotateX -= deltaY * 0.2;
+                    
+                    currentRotateX = Math.max(-60, Math.min(60, currentRotateX));
+                    
+                    updatePerspective();
+                    
+                    touchStartX = touchMoveX;
+                    touchStartY = touchMoveY;
+                    
+                } else if (e.touches.length === 2) {
+                    const distance = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    
+                    if (lastTouchDistance > 0) {
+                        const scale = distance / lastTouchDistance;
+                        currentZoom *= scale;
+                        currentZoom = Math.max(0.5, Math.min(3, currentZoom));
+                        updateZoom();
+                        console.log('Zoom level:', currentZoom);
+                    }
+                    
+                    lastTouchDistance = distance;
+                }
+            }, { passive: false });
+            
+            gallery.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                isTouch = false;
+                if (e.touches.length === 0) {
+                    lastTouchDistance = 0;
+                }
+            }, { passive: false });
+        }
+
+        function addMouseEvents() {
+            const gallery = document.getElementById('gallery-container');
+            let mouseStartX = 0;
+            let mouseStartY = 0;
+            let isMouseDragging = false;
+            
+            gallery.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                isMouseDragging = true;
+                mouseStartX = e.clientX;
+                mouseStartY = e.clientY;
+                gallery.style.cursor = 'grabbing';
+            });
+
+            gallery.addEventListener('mousemove', (e) => {
+                if (!isMouseDragging) return;
+                e.preventDefault();
+                
+                const deltaX = e.clientX - mouseStartX;
+                const deltaY = e.clientY - mouseStartY;
+                
+                currentRotateY += deltaX * 0.3;
+                currentRotateX -= deltaY * 0.3;
+                
+                currentRotateX = Math.max(-60, Math.min(60, currentRotateX));
+                
+                updatePerspective();
+                
+                mouseStartX = e.clientX;
+                mouseStartY = e.clientY;
+            });
+
+            gallery.addEventListener('mouseup', (e) => {
+                e.preventDefault();
+                isMouseDragging = false;
+                gallery.style.cursor = 'grab';
+            });
+
+            gallery.addEventListener('mouseleave', (e) => {
+                isMouseDragging = false;
+                gallery.style.cursor = 'grab';
+            });
+            
+            gallery.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                currentZoom *= delta;
+                currentZoom = Math.max(0.5, Math.min(3, currentZoom));
+                updateZoom();
+                console.log('Mouse wheel zoom:', currentZoom);
+            });
+            
+            gallery.style.cursor = 'grab';
+        }
+
+        function updateZoom() {
+            const fallingItems = document.getElementById('falling-items');
+            const currentTransform = fallingItems.style.transform;
+            
+            const rotateXMatch = currentTransform.match(/rotateX\(([^)]+)\)/);
+            const rotateYMatch = currentTransform.match(/rotateY\(([^)]+)\)/);
+            
+            const rotateX = rotateXMatch ? rotateXMatch[1] : '0deg';
+            const rotateY = rotateYMatch ? rotateYMatch[1] : '0deg';
+            
+            fallingItems.style.transform = `
+                rotateX(${rotateX}) 
+                rotateY(${rotateY})
+                scale(${currentZoom})
+            `;
+        }
+
+        function createStarsBackground() {
+            const starsContainer = document.getElementById('stars-background');
+            starsContainer.innerHTML = '';
+            
+            for (let i = 0; i < 30; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                
+                const size = Math.random() * 2 + 1;
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 4 + 's';
+                star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                
+                starsContainer.appendChild(star);
+            }
+            
+            console.log('Background stars created:', starsContainer.children.length);
+        }
+
+        function shareGallery() {
+            if (navigator.share) {
+                navigator.share({
+                    title: '💕 Love Gallery',
+                    text: `Check out this beautiful 3D gallery: "${galleryData.customText}"`,
+                    url: window.location.href
+                });
+            } else {
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    alert('Gallery link copied to clipboard! 💕');
+                });
+            }
+        }
+
+        function showError() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+        }
+
+        loadGallery();
+    </script>
+</body>
+</html>

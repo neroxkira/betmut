@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nerox - fail</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .container {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 48px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            max-width: 640px;
+            width: 100%;
+        }
+
+        .heart-title {
+            text-align: center;
+            font-size: 3.2em;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 40px;
+            letter-spacing: -0.02em;
+        }
+
+        .heart-title::before {
+            content: '';
+            position: absolute;
+            left: -60px;
+            top: 0;
+            font-size: 0.7em;
+            filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.3));
+        }
+
+        .heart-title::after {
+            content: '';
+            position: absolute;
+            right: -60px;
+            top: 0;
+            font-size: 0.7em;
+            filter: drop-shadow(0 0 10px rgba(118, 75, 162, 0.3));
+        }
+
+        .form-group {
+            margin-bottom: 32px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #374151;
+            font-size: 15px;
+            letter-spacing: 0.025em;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.2s ease;
+            background: #fafafa;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus {
+            border-color: #6366f1;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .file-upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 16px;
+            padding: 48px 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            background: #f9fafb;
+        }
+
+        .file-upload-area:hover {
+            border-color: #6366f1;
+            background: #f3f4f6;
+            transform: translateY(-2px);
+        }
+
+        .file-upload-area.dragover {
+            border-color: #4338ca;
+            background: #f3f4f6;
+            transform: scale(1.02);
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 3.5em;
+            color: #6366f1;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            font-size: 18px;
+            color: #4b5563;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .upload-hint {
+            font-size: 14px;
+            color: #9ca3af;
+            font-weight: 400;
+        }
+
+        .music-options {
+            margin-bottom: 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .radio-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .radio-group:hover {
+            background: #f3f4f6;
+        }
+
+        .radio-group input[type="radio"] {
+            margin-right: 12px;
+            transform: scale(1.2);
+            accent-color: #6366f1;
+        }
+
+        .radio-group label {
+            margin-bottom: 0;
+            cursor: pointer;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .music-upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 16px;
+            background: #f9fafb;
+        }
+
+        .music-upload-area:hover {
+            border-color: #6366f1;
+            background: #f3f4f6;
+        }
+
+        #music-input {
+            display: none;
+        }
+
+        .music-preview {
+            margin-top: 16px;
+            padding: 20px;
+            background: #f0f9ff;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #bae6fd;
+        }
+
+        .music-preview audio {
+            width: 100%;
+            max-width: 320px;
+            margin: 12px 0;
+        }
+
+        .remove-music-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 12px;
+            font-weight: 500;
+            transition: transform 0.2s ease;
+        }
+
+        .remove-music-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .preview-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .preview-item {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            aspect-ratio: 1;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .preview-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .remove-btn:hover {
+            background: rgba(220, 38, 38, 0.95);
+            transform: scale(1.1);
+        }
+
+        .create-btn {
+            width: 100%;
+            padding: 18px 24px;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 32px;
+            font-family: inherit;
+            letter-spacing: 0.025em;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .create-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            background: #4f46e5;
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .create-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .create-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+        }
+
+        .result-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-content {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            padding: 48px;
+            border-radius: 24px;
+            text-align: center;
+            max-width: 520px;
+            width: 90%;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+        }
+
+        .qr-heart-container {
+            position: relative;
+            display: inline-block;
+            margin: 24px 0;
+            width: 300px;
+            height: 300px;
+        }
+
+        .qr-heart {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            border: 1px solid #e5e7eb;
+        }
+
+        .qr-heart img {
+            width: 260px;
+            height: 260px;
+            border-radius: 8px;
+        }
+
+        .share-links {
+            margin: 24px 0;
+        }
+
+        .share-link {
+            display: block;
+            margin: 12px 0;
+            padding: 16px 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #374151;
+            word-break: break-all;
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s ease;
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+        }
+
+        .share-link:hover {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+            transform: translateY(-1px);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 24px 0;
+        }
+
+        .spinner {
+            border: 3px solid rgba(99, 102, 241, 0.1);
+            border-top: 3px solid #6366f1;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin: 16px 0;
+            display: none;
+            border: 1px solid #fca5a5;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 16px;
+            }
+            
+            .container {
+                padding: 32px 24px;
+                max-width: 100%;
+                width: 100%;
+                border-radius: 20px;
+            }
+            
+            .heart-title {
+                font-size: 2.4em;
+            }
+            
+            .file-upload-area {
+                padding: 32px 20px;
+            }
+            
+            .qr-heart-container {
+                width: 260px;
+                height: 260px;
+            }
+            
+            .qr-heart {
+                width: 260px;
+                height: 260px;
+                padding: 16px;
+            }
+            
+            .qr-heart img {
+                width: 228px;
+                height: 228px;
+            }
+            
+            .result-content {
+                padding: 32px 24px;
+                width: 95%;
+                border-radius: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 24px 20px;
+                border-radius: 16px;
+            }
+            
+            .heart-title {
+                font-size: 2em;
+                margin-bottom: 32px;
+            }
+            
+            .file-upload-area {
+                padding: 24px 16px;
+            }
+            
+            .upload-icon {
+                font-size: 2.8em;
+            }
+            
+            .qr-heart-container {
+                width: 220px;
+                height: 220px;
+            }
+            
+            .qr-heart {
+                width: 220px;
+                height: 220px;
+                padding: 12px;
+            }
+            
+            .qr-heart img {
+                width: 196px;
+                height: 196px;
+            }
+            
+            .result-content {
+                padding: 24px 20px;
+            }
+            
+            .preview-container {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="heart-title">NEROX - FAIL'S</h1>
+        
+        <form id="gallery-form">
+            <div class="form-group">
+                <label for="custom-text">Text untuk fotonya :</label>
+                <input type="text" id="custom-text" name="customText" placeholder="Love, Forever, etc..." maxlength="20">
+            </div>
+
+            <div class="form-group">
+                <label>Background Music:</label>
+                <div class="music-options">
+                    <div class="radio-group">
+                        <input type="radio" id="music-none" name="musicType" value="none" checked>
+                        <label for="music-none">No Music</label>
+                    </div>
+                    <div class="radio-group">
+                        <input type="radio" id="music-default" name="musicType" value="default">
+                        <label for="music-default">Default Music</label>
+                    </div>
+                    <div class="radio-group">
+                        <input type="radio" id="music-custom" name="musicType" value="custom">
+                        <label for="music-custom">Upload Custom Music</label>
+                    </div>
+                </div>
+                
+                <div class="music-upload-area" id="music-upload-area" style="display: none;">
+                    <div class="upload-icon">🎵</div>
+                    <div class="upload-text">Click atau drag & drop musik disini</div>
+                    <div class="upload-hint">MP3, WAV, OGG, M4A - Max 10MB</div>
+                    <input type="file" id="music-input" name="music" accept="audio/*">
+                </div>
+                <div class="music-preview" id="music-preview" style="display: none;"></div>
+            </div>
+
+            <div class="form-group">
+                <label>Upload Images (Max 7 photos):</label>
+                <div class="file-upload-area" id="upload-area">
+                    <div class="upload-icon">📸</div>
+                    <div class="upload-text">Click atau drag & drop gambar disini</div>
+                    <div class="upload-hint">Max 7 images, JPG/PNG, 5MB each</div>
+                    <input type="file" id="file-input" name="images" multiple accept="image/*">
+                </div>
+                <div class="preview-container" id="preview-container"></div>
+            </div>
+
+            <div class="error-message" id="error-message"></div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <div>Creating your magical gallery...</div>
+            </div>
+
+            <button type="submit" class="create-btn" id="create-btn">
+                Create Website
+            </button>
+        </form>
+    </div>
+
+    <!-- Result Modal -->
+    <div class="result-modal" id="result-modal">
+        <div class="result-content">
+            <h2>🎉 Premium Gallery Created Successfully! 🎉</h2>
+            
+            <div class="qr-heart-container">
+                <div class="qr-heart">
+                    <img id="qr-code" src="" alt="QR Code Love">
+                </div>
+            </div>
+            
+            <button onclick="downloadQR()" class="create-btn" style="margin: 10px; background: #0891b2;">
+                💾 Download QR Code
+            </button>
+            
+            <div class="share-links">
+                <strong>Gallery Link:</strong>
+                <a id="gallery-link" href="" target="_blank" class="share-link"></a>
+            </div>
+            
+            <button onclick="closeModal()" class="create-btn" style="margin-top: 20px;">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let selectedFiles = [];
+        let selectedMusic = null;
+        const maxFiles = 7;
+
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file-input');
+        const previewContainer = document.getElementById('preview-container');
+        const errorMessage = document.getElementById('error-message');
+        const loadingDiv = document.getElementById('loading');
+        const createBtn = document.getElementById('create-btn');
+        const musicUploadArea = document.getElementById('music-upload-area');
+        const musicInput = document.getElementById('music-input');
+        const musicPreview = document.getElementById('music-preview');
+        const musicRadios = document.querySelectorAll('input[name="musicType"]');
+
+        musicRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.value === 'custom') {
+                    musicUploadArea.style.display = 'block';
+                } else {
+                    musicUploadArea.style.display = 'none';
+                    selectedMusic = null;
+                    musicPreview.style.display = 'none';
+                }
+            });
+        });
+        musicUploadArea.addEventListener('click', () => {
+            musicInput.click();
+        });
+        musicInput.addEventListener('change', (e) => {
+            handleMusicFile(e.target.files[0]);
+        });
+        musicUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            musicUploadArea.style.borderColor = '#6366f1';
+        });
+
+        musicUploadArea.addEventListener('dragleave', () => {
+            musicUploadArea.style.borderColor = '#d1d5db';
+        });
+
+        musicUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            musicUploadArea.style.borderColor = '#d1d5db';
+            handleMusicFile(e.dataTransfer.files[0]);
+        });
+
+        function handleMusicFile(file) {
+            if (!file) return;
+            
+            if (!file.type.startsWith('audio/')) {
+                showError('Hanya file audio yang diperbolehkan untuk musik.');
+                return;
+            }
+            
+            if (file.size > 10 * 1024 * 1024) {
+                showError('Ukuran file musik maksimal 10MB.');
+                return;
+            }
+            
+            selectedMusic = file;
+            showMusicPreview(file);
+        }
+
+        function showMusicPreview(file) {
+            const url = URL.createObjectURL(file);
+            musicPreview.innerHTML = `
+                <p><strong>Music:</strong> ${file.name}</p>
+                <audio controls>
+                    <source src="${url}" type="${file.type}">
+                </audio>
+                <br>
+                <button type="button" class="remove-music-btn" onclick="removeMusicFile()">Remove Music</button>
+            `;
+            musicPreview.style.display = 'block';
+        }
+
+        function removeMusicFile() {
+            selectedMusic = null;
+            musicPreview.style.display = 'none';
+            musicInput.value = '';
+        }
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        })
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            showError('');
+            
+            const remainingSlots = maxFiles - selectedFiles.length;
+            const filesToAdd = Math.min(files.length, remainingSlots);
+            
+            if (files.length > remainingSlots) {
+                showError(`Hanya bisa upload maksimal ${maxFiles} gambar. ${remainingSlots} slot tersisa.`);
+            }
+
+            for (let i = 0; i < filesToAdd; i++) {
+                const file = files[i];
+                
+                if (!file.type.startsWith('image/')) {
+                    showError('Hanya file gambar yang diperbolehkan.');
+                    continue;
+                }
+                
+                if (file.size > 5 * 1024 * 1024) {
+                    showError('Ukuran file maksimal 5MB.');
+                    continue;
+                }
+                
+                selectedFiles.push(file);
+                addPreview(file);
+            }
+            
+            updateCreateButton();
+        }
+
+        function addPreview(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'preview-item';
+                previewItem.innerHTML = `
+                    <img src="${e.target.result}" alt="Preview">
+                    <button type="button" class="remove-btn" onclick="removeFile(${selectedFiles.indexOf(file)})">×</button>
+                `;
+                previewContainer.appendChild(previewItem);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            updatePreviews();
+            updateCreateButton();
+        }
+
+        function updatePreviews() {
+            previewContainer.innerHTML = '';
+            selectedFiles.forEach(file => addPreview(file));
+        }
+
+        function updateCreateButton() {
+            createBtn.disabled = selectedFiles.length === 0;
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = message ? 'block' : 'none';
+        }
+        document.getElementById('gallery-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (selectedFiles.length === 0) {
+                showError('Pilih minimal 1 gambar.');
+                return;
+            }
+
+            const musicType = document.querySelector('input[name="musicType"]:checked').value;
+            if (musicType === 'custom' && !selectedMusic) {
+                showError('Pilih file musik atau ubah ke opsi lain.');
+                return;
+            }
+
+            loadingDiv.style.display = 'block';
+            createBtn.disabled = true;
+            showError('');
+
+            const formData = new FormData();
+            formData.append('customText', document.getElementById('custom-text').value || 'Love');
+            formData.append('musicType', musicType);
+            
+            selectedFiles.forEach(file => {
+                formData.append('images', file);
+            });
+            
+            if (musicType === 'custom' && selectedMusic) {
+                formData.append('music', selectedMusic);
+            }
+
+            try {
+                const response = await fetch('/api/create-gallery', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showResult(result);
+                } else {
+                    showError(result.error || 'Gagal membuat gallery.');
+                }
+            } catch (error) {
+                showError('Terjadi kesalahan saat membuat gallery.');
+                console.error('Error:', error);
+            } finally {
+                loadingDiv.style.display = 'none';
+                createBtn.disabled = false;
+            }
+        });
+
+        function showResult(result) {
+            document.getElementById('qr-code').src = result.qrCode;
+            document.getElementById('gallery-link').href = result.galleryUrl;
+            document.getElementById('gallery-link').textContent = result.galleryUrl;
+            document.getElementById('result-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('result-modal').style.display = 'none';
+            selectedFiles = [];
+            selectedMusic = null;
+            previewContainer.innerHTML = '';
+            musicPreview.style.display = 'none';
+            musicUploadArea.style.display = 'none';
+            document.getElementById('custom-text').value = '';
+            document.getElementById('music-none').checked = true;
+            musicInput.value = '';
+            updateCreateButton();
+        }
+
+        function downloadQR() {
+            const qrImage = document.getElementById('qr-code');
+            const link = document.createElement('a');
+            link.download = 'love-qr-code.png';
+            link.href = qrImage.src;
+            link.click();
+        }
+        updateCreateButton();
+    </script>
+</body>
+</html>
