@@ -135,6 +135,27 @@ app.get('/api/music/:filename', (req, res) => {
   }
 });
 
+// Serve default music files
+app.get('/music/default/:filename', (req, res) => {
+  const { filename } = req.params;
+  const filePath = path.join(process.cwd(), 'music', 'default', filename);
+  
+  if (fs.existsSync(filePath)) {
+    const ext = path.extname(filename).toLowerCase();
+    let contentType = 'application/octet-stream';
+    if (ext === '.mp3') contentType = 'audio/mpeg';
+    else if (ext === '.wav') contentType = 'audio/wav';
+    else if (ext === '.ogg') contentType = 'audio/ogg';
+    else if (ext === '.m4a') contentType = 'audio/mp4';
+    
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Cache-Control', 'public, max-age=31536000');
+    res.sendFile(filePath);
+  } else {
+    res.status(404).json({ error: 'File not found' });
+  }
+});
+
 // API to create new gallery
 app.post('/api/create-gallery', upload.fields([
   { name: 'images', maxCount: 7 },
@@ -155,6 +176,26 @@ app.post('/api/create-gallery', upload.fields([
     let musicPath = null;
     if (musicType === 'custom' && req.files.music && req.files.music.length > 0) {
       musicPath = `/api/music/${req.files.music[0].filename}`;
+    } else if (musicType === 'default') {
+      // Get random default music from local folder
+      const defaultMusicPath = path.join(process.cwd(), 'music', 'default');
+      try {
+        const defaultMusicFiles = await fs.readdir(defaultMusicPath);
+        const audioFiles = defaultMusicFiles.filter(file => {
+          const ext = path.extname(file).toLowerCase();
+          return ['.mp3', '.wav', '.ogg', '.m4a'].includes(ext);
+        });
+        
+        if (audioFiles.length > 0) {
+          const randomMusic = audioFiles[Math.floor(Math.random() * audioFiles.length)];
+          musicPath = `/music/default/${randomMusic}`;
+          console.log('Selected default music:', randomMusic);
+        } else {
+          console.warn('No audio files found in music/default directory');
+        }
+      } catch (error) {
+        console.error('Error reading default music directory:', error);
+      }
     }
 
     const galleryData = {
